@@ -1,19 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TaskOS</title>
   <style>
+    /* ── Tokens ── */
     :root {
-      --bg-from: #e8d5f5;
-      --bg-to:   #c8e6ff;
-      --glass:   rgba(255,255,255,0.45);
-      --glass-border: rgba(255,255,255,0.7);
-      --glass-shadow: 0 8px 32px rgba(120,80,180,0.10);
-      --text:    #3a3153;
-      --muted:   #9b8faa;
-      --radius:  18px;
+      --bg-a:        #ede9ff;
+      --bg-b:        #dceeff;
+      --bg-c:        #fce4f0;
+      --glass:       rgba(255,255,255,0.50);
+      --glass-b:     rgba(255,255,255,0.72);
+      --glass-brd:   rgba(255,255,255,0.75);
+      --shadow:      0 8px 32px rgba(120,80,180,0.10);
+      --text:        #2e2650;
+      --text2:       #6b5f88;
+      --muted:       #a598bb;
+      --error:       #e53e3e;
+      --error-bg:    rgba(229,62,62,0.10);
+      --radius:      20px;
+      --accent:      #8b5cf6;
+      --accent2:     #60a5fa;
+    }
+    [data-theme="dark"] {
+      --bg-a:        #13102a;
+      --bg-b:        #0f1a2e;
+      --bg-c:        #1e1030;
+      --glass:       rgba(30,22,60,0.60);
+      --glass-b:     rgba(40,30,70,0.80);
+      --glass-brd:   rgba(120,90,200,0.25);
+      --shadow:      0 8px 32px rgba(0,0,0,0.35);
+      --text:        #ede9ff;
+      --text2:       #b8aed4;
+      --muted:       #6e5fa0;
+      --error:       #fc8181;
+      --error-bg:    rgba(252,129,129,0.12);
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -21,423 +43,317 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #f0e6ff 0%, #dceeff 50%, #fce4f0 100%);
+      background: linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 50%, var(--bg-c) 100%);
       color: var(--text);
+      transition: background 0.4s, color 0.3s;
     }
 
-    /* ── Blobs ── */
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .blob-1 { width:500px; height:500px; background:#c9b0ff; top:-120px; left:-100px; }
-    .blob-2 { width:400px; height:400px; background:#a8d8ff; bottom:-80px; right:-80px; }
-    .blob-3 { width:300px; height:300px; background:#ffb8d9; top:40%; left:60%; }
+    /* blobs */
+    .blob { position:fixed; border-radius:50%; filter:blur(80px); opacity:.30; pointer-events:none; z-index:0; transition: opacity 0.4s; }
+    [data-theme="dark"] .blob { opacity:.15; }
+    .blob-1 { width:520px; height:520px; background:#c9b0ff; top:-130px; left:-120px; }
+    .blob-2 { width:420px; height:420px; background:#a8d8ff; bottom:-100px; right:-100px; }
+    .blob-3 { width:320px; height:320px; background:#ffb8d9; top:38%; left:58%; }
 
-    .app {
-      position: relative;
-      z-index: 1;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 40px 24px 60px;
-    }
-
-    /* ── Glass mixin ── */
     .glass {
       background: var(--glass);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--glass-brd);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: var(--shadow);
+      transition: background 0.3s, border 0.3s;
     }
 
-    /* ── Header ── */
-    header {
-      text-align: center;
-      margin-bottom: 36px;
+    /* ── Layout ── */
+    .app { position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:32px 20px 60px; }
+
+    /* ── Top bar ── */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:32px; flex-wrap:wrap; gap:12px;
     }
-    header h1 {
-      font-size: 34px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #8b5cf6, #3b82f6, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 4px;
+    .brand h1 {
+      font-size:28px; font-weight:800; letter-spacing:-0.5px;
+      background:linear-gradient(135deg,#8b5cf6,#3b82f6,#ec4899);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-    header p {
-      font-size: 14px;
-      color: var(--muted);
-      letter-spacing: 0.3px;
+    .brand p { font-size:12px; color:var(--muted); margin-top:1px; }
+
+    .topbar-right { display:flex; align-items:center; gap:10px; }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      width:44px; height:26px;
+      background: rgba(139,92,246,0.2);
+      border:1.5px solid rgba(139,92,246,0.3);
+      border-radius:13px;
+      cursor:pointer;
+      position:relative;
+      transition:all 0.3s;
     }
+    .theme-toggle::after {
+      content:''; position:absolute;
+      width:18px; height:18px;
+      background:linear-gradient(135deg,#8b5cf6,#60a5fa);
+      border-radius:50%;
+      top:3px; left:3px;
+      transition:transform 0.3s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    [data-theme="dark"] .theme-toggle::after { transform:translateX(18px); }
+    [data-theme="dark"] .theme-toggle { background:rgba(139,92,246,0.35); border-color:rgba(139,92,246,0.5); }
+    .theme-label { font-size:12px; color:var(--muted); }
 
     /* ── Stats ── */
-    .stats {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-    .stat {
-      flex: 1;
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-    }
-    .stat .n {
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .stat .l { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
-    .stat.total .n { color: #8b5cf6; }
-    .stat.done  .n { color: #34d399; }
-    .stat.left  .n { color: #60a5fa; }
+    .stats { display:flex; gap:12px; margin-bottom:24px; }
+    .stat { flex:1; border-radius:16px; padding:14px; text-align:center; }
+    .stat .n { font-size:26px; font-weight:700; line-height:1; margin-bottom:3px; }
+    .stat .l { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.8px; text-transform:uppercase; }
+    .stat.total .n { color:#8b5cf6; }
+    .stat.done  .n { color:#34d399; }
+    .stat.left  .n { color:#60a5fa; }
 
     /* ── Progress ── */
-    .progress-wrap {
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 28px;
-    }
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-    .progress-bar {
-      height: 6px;
-      background: rgba(139,92,246,0.12);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #8b5cf6, #60a5fa, #34d399);
-      border-radius: 3px;
-      transition: width 0.4s ease;
-    }
+    .progress-wrap { border-radius:14px; padding:13px 18px; margin-bottom:24px; }
+    .progress-header { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); font-weight:500; margin-bottom:8px; }
+    .progress-bar { height:6px; background:rgba(139,92,246,0.12); border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#8b5cf6,#60a5fa,#34d399); border-radius:3px; transition:width .4s ease; }
 
     /* ── Category tabs ── */
-    .cat-bar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-      align-items: center;
-    }
+    .cat-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
     .cat-tab {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 30px;
-      border: 1.5px solid transparent;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      color: var(--muted);
+      display:flex; align-items:center; gap:5px;
+      padding:6px 14px; border-radius:30px;
+      border:1.5px solid transparent;
+      font-size:12px; font-weight:500; cursor:pointer;
+      background:rgba(255,255,255,0.35); color:var(--muted);
+      transition:all .2s; backdrop-filter:blur(10px);
     }
-    .cat-tab:hover { background: rgba(255,255,255,0.65); color: var(--text); }
-    .cat-tab.active {
-      background: rgba(255,255,255,0.75);
-      border-color: rgba(139,92,246,0.4);
-      color: #8b5cf6;
-      box-shadow: 0 2px 12px rgba(139,92,246,0.15);
-    }
-    .cat-tab .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
-    .cat-count {
-      background: rgba(139,92,246,0.12);
-      color: #8b5cf6;
-      border-radius: 10px;
-      padding: 1px 6px;
-      font-size: 11px;
-      font-weight: 600;
-    }
+    [data-theme="dark"] .cat-tab { background:rgba(60,40,100,0.4); }
+    .cat-tab:hover { background:var(--glass-b); color:var(--text); }
+    .cat-tab.active { background:var(--glass-b); border-color:rgba(139,92,246,0.4); color:var(--accent); box-shadow:0 2px 12px rgba(139,92,246,0.15); }
+    .cat-tab .dot { width:7px; height:7px; border-radius:50%; }
+    .cat-count { background:rgba(139,92,246,0.12); color:var(--accent); border-radius:10px; padding:1px 6px; font-size:10px; font-weight:700; }
 
     /* ── Add form ── */
-    .add-form {
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 28px;
+    .add-form { border-radius:var(--radius); padding:20px; margin-bottom:24px; }
+    .form-row  { display:flex; gap:10px; margin-bottom:10px; }
+    .form-row2 { display:flex; gap:10px; margin-bottom:10px; }
+
+    .field {
+      width:100%;
+      background:rgba(255,255,255,0.45);
+      border:1.5px solid rgba(255,255,255,0.75);
+      border-radius:12px;
+      padding:11px 15px;
+      font-size:14px; font-family:inherit; color:var(--text);
+      outline:none; transition:all .2s;
+      resize:none;
     }
-    .form-row { display: flex; gap: 10px; margin-bottom: 14px; }
-    .task-input {
-      flex: 1;
-      background: rgba(255,255,255,0.5);
-      border: 1.5px solid rgba(255,255,255,0.8);
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: all 0.2s;
-    }
-    .task-input::placeholder { color: var(--muted); }
-    .task-input:focus {
-      background: rgba(255,255,255,0.75);
-      border-color: rgba(139,92,246,0.5);
-      box-shadow: 0 0 0 3px rgba(139,92,246,0.08);
-    }
+    [data-theme="dark"] .field { background:rgba(50,35,90,0.5); border-color:rgba(120,90,200,0.25); }
+    .field::placeholder { color:var(--muted); }
+    .field:focus { background:rgba(255,255,255,0.7); border-color:rgba(139,92,246,0.5); box-shadow:0 0 0 3px rgba(139,92,246,0.08); }
+    [data-theme="dark"] .field:focus { background:rgba(60,40,110,0.65); }
+    textarea.field { min-height:60px; line-height:1.5; }
+
     .add-btn {
-      background: linear-gradient(135deg, #8b5cf6, #60a5fa);
-      border: none;
-      border-radius: 12px;
-      padding: 12px 22px;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(139,92,246,0.3);
+      background:linear-gradient(135deg,#8b5cf6,#60a5fa);
+      border:none; border-radius:12px; padding:11px 22px;
+      color:#fff; font-size:14px; font-weight:600; font-family:inherit;
+      cursor:pointer; white-space:nowrap;
+      box-shadow:0 4px 14px rgba(139,92,246,0.3);
+      transition:all .2s; align-self:flex-start;
     }
-    .add-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
-    .add-btn:active { transform: translateY(0); }
+    .add-btn:hover { opacity:.9; transform:translateY(-1px); }
+    .add-btn:active { transform:translateY(0); }
 
-    .form-meta {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    /* Error message */
+    .error-msg {
+      display:none; align-items:center; gap:6px;
+      background:var(--error-bg); border:1px solid rgba(229,62,62,0.25);
+      color:var(--error); border-radius:10px;
+      padding:8px 14px; font-size:12px; font-weight:500;
+      margin-bottom:10px; animation:shake .3s ease;
     }
-    .meta-label {
-      font-size: 11px;
-      color: var(--muted);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .error-msg.show { display:flex; }
+    @keyframes shake {
+      0%,100%{ transform:translateX(0); }
+      25%{ transform:translateX(-6px); }
+      75%{ transform:translateX(6px); }
     }
 
-    /* Category select */
-    .cat-select {
-      background: rgba(255,255,255,0.5);
-      border: 1.5px solid rgba(255,255,255,0.8);
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .cat-select:focus { border-color: rgba(139,92,246,0.4); }
+    .form-meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .meta-label { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
 
-    /* Priority pills */
-    .priority-group { display: flex; gap: 6px; }
+    .cat-select, .deadline-input {
+      background:rgba(255,255,255,0.45);
+      border:1.5px solid rgba(255,255,255,0.75);
+      border-radius:10px; padding:7px 12px;
+      font-size:13px; font-family:inherit; color:var(--text);
+      outline:none; cursor:pointer; transition:all .2s;
+    }
+    [data-theme="dark"] .cat-select, [data-theme="dark"] .deadline-input {
+      background:rgba(50,35,90,0.5); border-color:rgba(120,90,200,0.25);
+    }
+    .cat-select:focus, .deadline-input:focus { border-color:rgba(139,92,246,0.4); }
+    .deadline-input::-webkit-calendar-picker-indicator { opacity:.5; cursor:pointer; }
+
+    .priority-group { display:flex; gap:6px; }
     .p-btn {
-      padding: 6px 12px;
-      border-radius: 20px;
-      border: 1.5px solid transparent;
-      font-size: 12px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: rgba(255,255,255,0.4);
-      color: var(--muted);
+      padding:6px 12px; border-radius:20px; border:1.5px solid transparent;
+      font-size:12px; font-weight:500; font-family:inherit; cursor:pointer;
+      background:rgba(255,255,255,0.35); color:var(--muted); transition:all .2s;
     }
-    .p-btn.low.active    { background: rgba(52,211,153,0.15); border-color: #34d399; color: #059669; }
-    .p-btn.medium.active { background: rgba(251,191,36,0.15); border-color: #fbbf24; color: #d97706; }
-    .p-btn.high.active   { background: rgba(248,113,113,0.15); border-color: #f87171; color: #dc2626; }
+    [data-theme="dark"] .p-btn { background:rgba(60,40,100,0.4); }
+    .p-btn.low.active    { background:rgba(52,211,153,0.15); border-color:#34d399; color:#059669; }
+    .p-btn.medium.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; color:#d97706; }
+    .p-btn.high.active   { background:rgba(248,113,113,0.15); border-color:#f87171; color:#dc2626; }
+    [data-theme="dark"] .p-btn.low.active    { color:#34d399; }
+    [data-theme="dark"] .p-btn.medium.active { color:#fbbf24; }
+    [data-theme="dark"] .p-btn.high.active   { color:#f87171; }
 
-    /* Deadline input */
-    .deadline-input {
-      background: rgba(255,255,255,0.5);
-      border: 1.5px solid rgba(255,255,255,0.8);
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: all 0.2s;
+    /* ── Filter row ── */
+    .filter-row { display:flex; gap:8px; margin-bottom:20px; align-items:center; flex-wrap:wrap; }
+    .filter-btn {
+      padding:6px 16px; border-radius:20px; border:1.5px solid transparent;
+      font-size:12px; font-weight:500; font-family:inherit; cursor:pointer;
+      background:rgba(255,255,255,0.35); color:var(--muted); transition:all .2s;
     }
-    .deadline-input:focus { border-color: rgba(139,92,246,0.4); }
-    .deadline-input::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+    [data-theme="dark"] .filter-btn { background:rgba(60,40,100,0.4); }
+    .filter-btn.active { background:var(--glass-b); border-color:rgba(139,92,246,0.35); color:var(--accent); }
+    .spacer { flex:1; }
+    .clear-btn {
+      padding:6px 14px; border-radius:20px;
+      border:1.5px solid rgba(248,113,113,0.3);
+      font-size:12px; font-weight:500; font-family:inherit; cursor:pointer;
+      background:transparent; color:#f87171; transition:all .2s;
+    }
+    .clear-btn:hover { background:rgba(248,113,113,0.1); }
 
     /* ── Cards grid ── */
-    .cards-grid {
-      columns: 3;
-      column-gap: 16px;
-    }
-    @media (max-width: 720px) { .cards-grid { columns: 2; } }
-    @media (max-width: 480px) { .cards-grid { columns: 1; } }
+    .cards-grid { columns:3; column-gap:16px; }
+    @media(max-width:780px){ .cards-grid{ columns:2; } }
+    @media(max-width:480px){ .cards-grid{ columns:1; } }
 
     .card {
-      break-inside: avoid;
-      margin-bottom: 16px;
-      border-radius: 20px;
-      padding: 18px;
-      position: relative;
-      transition: all 0.25s;
-      animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: default;
+      break-inside:avoid; margin-bottom:16px;
+      border-radius:20px; padding:18px;
+      transition:all .25s; cursor:default;
+      animation:popIn .25s cubic-bezier(.34,1.56,.64,1);
     }
     @keyframes popIn {
-      from { opacity:0; transform: scale(0.85) translateY(10px); }
-      to   { opacity:1; transform: scale(1) translateY(0); }
+      from{ opacity:0; transform:scale(.88) translateY(10px); }
+      to  { opacity:1; transform:scale(1) translateY(0); }
     }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 16px 40px rgba(120,80,180,0.18) !important;
-    }
-    .card.completed { opacity: 0.55; }
+    .card:hover { transform:translateY(-3px); }
+    .card.completed { opacity:.5; }
 
-    /* Card accent colors per category */
-    .card[data-cat="work"]     { background: rgba(235,225,255,0.75); border: 1px solid rgba(180,150,255,0.5); box-shadow: 0 4px 20px rgba(139,92,246,0.1); }
-    .card[data-cat="personal"] { background: rgba(255,225,240,0.75); border: 1px solid rgba(255,160,200,0.5); box-shadow: 0 4px 20px rgba(236,72,153,0.1); }
-    .card[data-cat="shopping"] { background: rgba(220,245,255,0.75); border: 1px solid rgba(140,210,255,0.5); box-shadow: 0 4px 20px rgba(59,130,246,0.1); }
-    .card[data-cat="health"]   { background: rgba(215,255,235,0.75); border: 1px solid rgba(100,220,170,0.5); box-shadow: 0 4px 20px rgba(16,185,129,0.1); }
-    .card[data-cat="other"]    { background: rgba(255,245,215,0.75); border: 1px solid rgba(255,200,100,0.5); box-shadow: 0 4px 20px rgba(245,158,11,0.1); }
+    /* card colours */
+    .card[data-cat="work"]     { background:rgba(235,225,255,0.72); border:1px solid rgba(180,150,255,0.45); box-shadow:0 4px 20px rgba(139,92,246,0.10); }
+    .card[data-cat="personal"] { background:rgba(255,225,240,0.72); border:1px solid rgba(255,160,200,0.45); box-shadow:0 4px 20px rgba(236,72,153,0.10); }
+    .card[data-cat="shopping"] { background:rgba(220,245,255,0.72); border:1px solid rgba(140,210,255,0.45); box-shadow:0 4px 20px rgba(59,130,246,0.10); }
+    .card[data-cat="health"]   { background:rgba(215,255,235,0.72); border:1px solid rgba(100,220,170,0.45); box-shadow:0 4px 20px rgba(16,185,129,0.10); }
+    .card[data-cat="other"]    { background:rgba(255,245,215,0.72); border:1px solid rgba(255,200,100,0.45); box-shadow:0 4px 20px rgba(245,158,11,0.10); }
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    .card-cat-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      opacity: 0.7;
-    }
+    [data-theme="dark"] .card[data-cat="work"]     { background:rgba(60,30,110,0.60); border-color:rgba(139,92,246,0.30); }
+    [data-theme="dark"] .card[data-cat="personal"] { background:rgba(80,20,60,0.60);  border-color:rgba(236,72,153,0.30); }
+    [data-theme="dark"] .card[data-cat="shopping"] { background:rgba(10,40,80,0.60);  border-color:rgba(59,130,246,0.30); }
+    [data-theme="dark"] .card[data-cat="health"]   { background:rgba(10,60,45,0.60);  border-color:rgba(16,185,129,0.30); }
+    [data-theme="dark"] .card[data-cat="other"]    { background:rgba(60,40,10,0.60);  border-color:rgba(245,158,11,0.30); }
+
+    .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .card-cat-badge { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; opacity:.65; }
     .card-cat-badge .dot { width:7px; height:7px; border-radius:50%; }
-
-    .card-actions { display: flex; gap: 6px; }
+    .card-actions { display:flex; gap:5px; flex-shrink:0; }
     .card-btn {
-      width: 28px; height: 28px;
-      border: none;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.2s;
-      background: rgba(255,255,255,0.5);
+      width:28px; height:28px; border:none; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:13px; transition:all .2s;
+      background:rgba(255,255,255,0.5);
     }
-    .card-btn:hover { background: rgba(255,255,255,0.85); transform: scale(1.1); }
-    .card-btn.check { color: #059669; }
-    .card-btn.del   { color: #dc2626; }
+    [data-theme="dark"] .card-btn { background:rgba(255,255,255,0.08); color:var(--text); }
+    .card-btn:hover { background:rgba(255,255,255,0.85); transform:scale(1.1); }
+    [data-theme="dark"] .card-btn:hover { background:rgba(255,255,255,0.18); }
+    .card-btn.check { color:#059669; }
+    .card-btn.edit  { color:#8b5cf6; }
+    .card-btn.del   { color:#dc2626; }
+    [data-theme="dark"] .card-btn.check { color:#34d399; }
+    [data-theme="dark"] .card-btn.del   { color:#f87171; }
 
-    .card-text {
-      font-size: 14px;
-      line-height: 1.55;
-      font-weight: 500;
-      margin-bottom: 12px;
-      word-break: break-word;
+    /* View mode */
+    .card-title {
+      font-size:14px; line-height:1.55; font-weight:600;
+      margin-bottom:6px; word-break:break-word;
+      color:var(--text);
     }
-    .card.completed .card-text {
-      text-decoration: line-through;
-      opacity: 0.6;
+    .card.completed .card-title { text-decoration:line-through; opacity:.6; }
+
+    .card-notes {
+      font-size:12.5px; line-height:1.6; color:var(--text2);
+      margin-bottom:10px; word-break:break-word; white-space:pre-wrap;
     }
 
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .priority-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-    }
-    .priority-badge.low    { background: rgba(52,211,153,0.2);  color: #059669; }
-    .priority-badge.medium { background: rgba(251,191,36,0.2);  color: #d97706; }
-    .priority-badge.high   { background: rgba(248,113,113,0.2); color: #dc2626; }
+    /* Edit mode */
+    .edit-mode { display:none; flex-direction:column; gap:8px; margin-bottom:10px; }
+    .edit-mode.show { display:flex; }
+    .view-mode.hide { display:none; }
 
-    .deadline-badge {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .edit-field {
+      width:100%; background:rgba(255,255,255,0.55);
+      border:1.5px solid rgba(139,92,246,0.4);
+      border-radius:10px; padding:8px 12px;
+      font-size:13px; font-family:inherit; color:var(--text);
+      outline:none; resize:none; line-height:1.5;
     }
-    .deadline-badge.overdue { color: #dc2626; }
+    [data-theme="dark"] .edit-field { background:rgba(50,35,90,0.55); }
+    .edit-field:focus { box-shadow:0 0 0 3px rgba(139,92,246,0.1); }
+    .edit-actions { display:flex; gap:6px; }
+    .save-btn {
+      padding:5px 14px; border-radius:8px; border:none;
+      background:linear-gradient(135deg,#8b5cf6,#60a5fa);
+      color:#fff; font-size:12px; font-weight:600; font-family:inherit;
+      cursor:pointer; transition:opacity .2s;
+    }
+    .save-btn:hover { opacity:.88; }
+    .cancel-btn {
+      padding:5px 14px; border-radius:8px;
+      border:1.5px solid rgba(139,92,246,0.25);
+      background:transparent; color:var(--muted);
+      font-size:12px; font-weight:500; font-family:inherit; cursor:pointer;
+    }
 
-    .card-time {
-      font-size: 10px;
-      color: var(--muted);
-      opacity: 0.7;
-    }
+    /* card footer */
+    .card-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+    .priority-badge { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
+    .priority-badge.low    { background:rgba(52,211,153,.2);  color:#059669; }
+    .priority-badge.medium { background:rgba(251,191,36,.2);  color:#d97706; }
+    .priority-badge.high   { background:rgba(248,113,113,.2); color:#dc2626; }
+    [data-theme="dark"] .priority-badge.low    { color:#34d399; }
+    [data-theme="dark"] .priority-badge.medium { color:#fbbf24; }
+    [data-theme="dark"] .priority-badge.high   { color:#f87171; }
+
+    .deadline-badge { font-size:11px; font-weight:500; color:var(--muted); display:flex; align-items:center; gap:3px; }
+    .deadline-badge.overdue { color:#dc2626; }
+    [data-theme="dark"] .deadline-badge.overdue { color:#f87171; }
+    .card-time { font-size:10px; color:var(--muted); opacity:.7; }
 
     /* ── Empty state ── */
-    .empty {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-    .empty .icon { font-size: 52px; margin-bottom: 12px; opacity: 0.4; }
-    .empty p { font-size: 14px; }
-
-    /* ── Filter bar (done/active) ── */
-    .filter-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      align-items: center;
-    }
-    .filter-btn {
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1.5px solid transparent;
-      font-size: 12px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      background: rgba(255,255,255,0.4);
-      color: var(--muted);
-      transition: all 0.2s;
-    }
-    .filter-btn.active {
-      background: rgba(255,255,255,0.7);
-      border-color: rgba(139,92,246,0.35);
-      color: #8b5cf6;
-    }
-    .spacer { flex: 1; }
-    .clear-btn {
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1.5px solid rgba(248,113,113,0.3);
-      font-size: 12px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      background: transparent;
-      color: #f87171;
-      transition: all 0.2s;
-    }
-    .clear-btn:hover { background: rgba(248,113,113,0.1); }
+    .empty { text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+    .empty .icon { font-size:52px; margin-bottom:12px; opacity:.4; }
+    .empty p { font-size:14px; }
 
     /* scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.25); border-radius: 3px; }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(139,92,246,0.25); border-radius:3px; }
+
+    /* mobile tweaks */
+    @media(max-width:520px){
+      .stats { gap:8px; }
+      .stat .n { font-size:22px; }
+      .form-meta { gap:8px; }
+      .topbar { gap:8px; }
+    }
   </style>
 </head>
 <body>
@@ -448,37 +364,29 @@
 
 <div class="app">
 
-  <!-- Header -->
-  <header>
-    <h1>TaskOS</h1>
-    <p>your personal task board</p>
-  </header>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <h1>TaskOS</h1>
+      <p>your personal task board</p>
+    </div>
+    <div class="topbar-right">
+      <span class="theme-label" id="theme-label">☀️ Light</span>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"></button>
+    </div>
+  </div>
 
   <!-- Stats -->
   <div class="stats">
-    <div class="stat glass total">
-      <div class="n" id="stat-total">0</div>
-      <div class="l">Total</div>
-    </div>
-    <div class="stat glass done">
-      <div class="n" id="stat-done">0</div>
-      <div class="l">Done</div>
-    </div>
-    <div class="stat glass left">
-      <div class="n" id="stat-left">0</div>
-      <div class="l">Left</div>
-    </div>
+    <div class="stat glass total"><div class="n" id="stat-total">0</div><div class="l">Total</div></div>
+    <div class="stat glass done"> <div class="n" id="stat-done">0</div> <div class="l">Done</div></div>
+    <div class="stat glass left"> <div class="n" id="stat-left">0</div> <div class="l">Left</div></div>
   </div>
 
   <!-- Progress -->
   <div class="progress-wrap glass" id="progress-wrap" style="display:none">
-    <div class="progress-header">
-      <span>Progress</span>
-      <span id="progress-pct">0%</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-    </div>
+    <div class="progress-header"><span>Progress</span><span id="progress-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
 
   <!-- Category tabs -->
@@ -486,9 +394,15 @@
 
   <!-- Add form -->
   <div class="add-form glass">
+    <div class="error-msg" id="error-msg">
+      <span>⚠️</span><span id="error-text"></span>
+    </div>
     <div class="form-row">
-      <input class="task-input" id="task-input" type="text" placeholder="Add a new task..." autocomplete="off" />
+      <input class="field" id="task-input" type="text" placeholder="Task title..." autocomplete="off" maxlength="120" />
       <button class="add-btn" onclick="addTask()">+ Add</button>
+    </div>
+    <div class="form-row2">
+      <textarea class="field" id="notes-input" placeholder="Notes / description (optional)..." rows="2" maxlength="600"></textarea>
     </div>
     <div class="form-meta">
       <span class="meta-label">Category</span>
@@ -499,24 +413,22 @@
         <option value="health">💚 Health</option>
         <option value="other">✨ Other</option>
       </select>
-
-      <span class="meta-label" style="margin-left:6px">Priority</span>
+      <span class="meta-label" style="margin-left:4px">Priority</span>
       <div class="priority-group">
-        <button class="p-btn low active" data-p="low" onclick="setPriority('low')">Low</button>
-        <button class="p-btn medium" data-p="medium" onclick="setPriority('medium')">Medium</button>
-        <button class="p-btn high" data-p="high" onclick="setPriority('high')">High</button>
+        <button class="p-btn low active" data-p="low"    onclick="setPriority('low')">Low</button>
+        <button class="p-btn medium"     data-p="medium" onclick="setPriority('medium')">Medium</button>
+        <button class="p-btn high"       data-p="high"   onclick="setPriority('high')">High</button>
       </div>
-
-      <span class="meta-label" style="margin-left:6px">Deadline</span>
+      <span class="meta-label" style="margin-left:4px">Deadline</span>
       <input class="deadline-input" id="deadline-input" type="date" />
     </div>
   </div>
 
   <!-- Filter row -->
   <div class="filter-row">
-    <button class="filter-btn active" data-f="all" onclick="setFilter('all')">All</button>
-    <button class="filter-btn" data-f="active" onclick="setFilter('active')">Active</button>
-    <button class="filter-btn" data-f="done" onclick="setFilter('done')">Completed</button>
+    <button class="filter-btn active" data-f="all"    onclick="setFilter('all')">All</button>
+    <button class="filter-btn"        data-f="active" onclick="setFilter('active')">Active</button>
+    <button class="filter-btn"        data-f="done"   onclick="setFilter('done')">Completed</button>
     <div class="spacer"></div>
     <button class="clear-btn" onclick="clearDone()">Clear Completed</button>
   </div>
@@ -528,17 +440,35 @@
 
 <script>
   const CATS = {
-    work:     { label:'Work',     icon:'💼', color:'#8b5cf6', dot:'#a78bfa' },
-    personal: { label:'Personal', icon:'🌸', color:'#ec4899', dot:'#f472b6' },
-    shopping: { label:'Shopping', icon:'🛍️', color:'#3b82f6', dot:'#60a5fa' },
-    health:   { label:'Health',   icon:'💚', color:'#10b981', dot:'#34d399' },
-    other:    { label:'Other',    icon:'✨', color:'#f59e0b', dot:'#fbbf24' },
+    work:     { label:'Work',     icon:'💼', dot:'#a78bfa' },
+    personal: { label:'Personal', icon:'🌸', dot:'#f472b6' },
+    shopping: { label:'Shopping', icon:'🛍️', dot:'#60a5fa' },
+    health:   { label:'Health',   icon:'💚', dot:'#34d399' },
+    other:    { label:'Other',    icon:'✨', dot:'#fbbf24' },
   };
 
-  let tasks    = JSON.parse(localStorage.getItem('taskos-v2') || '[]');
+  const MAX_TITLE = 100;
+  const MAX_NOTES = 500;
+
+  let tasks    = JSON.parse(localStorage.getItem('taskos-v3') || '[]');
   let filter   = 'all';
   let catFilter = 'all';
   let priority = 'low';
+  let theme    = localStorage.getItem('taskos-theme') || 'light';
+
+  // Apply saved theme
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeLabel();
+
+  function toggleTheme() {
+    theme = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('taskos-theme', theme);
+    updateThemeLabel();
+  }
+  function updateThemeLabel() {
+    document.getElementById('theme-label').textContent = theme === 'light' ? '☀️ Light' : '🌙 Dark';
+  }
 
   function setPriority(p) {
     priority = p;
@@ -553,24 +483,38 @@
 
   function setCatFilter(c) {
     catFilter = c;
-    renderCatBar();
     render();
   }
 
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    document.getElementById('error-text').textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
   function addTask() {
-    const input    = document.getElementById('task-input');
-    const cat      = document.getElementById('cat-select').value;
-    const deadline = document.getElementById('deadline-input').value;
-    const text     = input.value.trim();
-    if (!text) return;
+    const titleEl = document.getElementById('task-input');
+    const notesEl = document.getElementById('notes-input');
+    const title   = titleEl.value.trim();
+    const notes   = notesEl.value.trim();
+
+    if (!title) { showError('Task title cannot be empty.'); titleEl.focus(); return; }
+    if (title.length > MAX_TITLE) { showError(`Title is too long (max ${MAX_TITLE} characters).`); return; }
+    if (notes.length > MAX_NOTES) { showError(`Notes are too long (max ${MAX_NOTES} characters).`); return; }
+
     tasks.unshift({
       id: Date.now(),
-      text, priority, cat,
-      deadline: deadline || null,
+      title, notes,
+      priority,
+      cat: document.getElementById('cat-select').value,
+      deadline: document.getElementById('deadline-input').value || null,
       done: false,
       time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
     });
-    input.value = '';
+
+    titleEl.value = '';
+    notesEl.value = '';
     document.getElementById('deadline-input').value = '';
     save(); render();
   }
@@ -585,14 +529,43 @@
     save(); render();
   }
 
+  function startEdit(id) {
+    const card = document.getElementById('card-' + id);
+    card.querySelector('.view-mode').classList.add('hide');
+    card.querySelector('.edit-mode').classList.add('show');
+    card.querySelector('.edit-title').focus();
+  }
+
+  function cancelEdit(id) {
+    const t    = tasks.find(t => t.id === id);
+    const card = document.getElementById('card-' + id);
+    card.querySelector('.edit-title').value = t.title;
+    card.querySelector('.edit-notes').value = t.notes || '';
+    card.querySelector('.edit-mode').classList.remove('show');
+    card.querySelector('.view-mode').classList.remove('hide');
+  }
+
+  function saveEdit(id) {
+    const card  = document.getElementById('card-' + id);
+    const title = card.querySelector('.edit-title').value.trim();
+    const notes = card.querySelector('.edit-notes').value.trim();
+
+    if (!title) { showError('Title cannot be empty.'); return; }
+    if (title.length > MAX_TITLE) { showError(`Title is too long (max ${MAX_TITLE} chars).`); return; }
+    if (notes.length > MAX_NOTES) { showError(`Notes are too long (max ${MAX_NOTES} chars).`); return; }
+
+    const t = tasks.find(t => t.id === id);
+    t.title = title;
+    t.notes = notes;
+    save(); render();
+  }
+
   function clearDone() {
     tasks = tasks.filter(t => !t.done);
     save(); render();
   }
 
-  function save() {
-    localStorage.setItem('taskos-v2', JSON.stringify(tasks));
-  }
+  function save() { localStorage.setItem('taskos-v3', JSON.stringify(tasks)); }
 
   function fmtDeadline(d) {
     if (!d) return null;
@@ -603,44 +576,32 @@
     return { label, overdue: diff < 0, today: diff === 0 };
   }
 
-  function renderCatBar() {
-    const bar = document.getElementById('cat-bar');
-    const counts = {};
-    tasks.forEach(t => { counts[t.cat] = (counts[t.cat]||0) + 1; });
-
-    let html = `<button class="cat-tab ${catFilter==='all'?'active':''}" onclick="setCatFilter('all')">
-      All <span class="cat-count">${tasks.length}</span>
-    </button>`;
-
-    Object.entries(CATS).forEach(([key, c]) => {
-      const n = counts[key] || 0;
-      if (!n) return;
-      html += `<button class="cat-tab ${catFilter===key?'active':''}" onclick="setCatFilter('${key}')">
-        <span class="dot" style="background:${c.dot}"></span>
-        ${c.icon} ${c.label} <span class="cat-count">${n}</span>
-      </button>`;
-    });
-
-    bar.innerHTML = html;
-  }
-
   function render() {
-    const grid = document.getElementById('cards-grid');
     const total = tasks.length;
     const done  = tasks.filter(t => t.done).length;
-    const left  = total - done;
     const pct   = total ? Math.round((done/total)*100) : 0;
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-done').textContent  = done;
-    document.getElementById('stat-left').textContent  = left;
+    document.getElementById('stat-left').textContent  = total - done;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-pct').textContent  = pct + '%';
     document.getElementById('progress-wrap').style.display = total ? '' : 'none';
 
-    renderCatBar();
+    // cat bar
+    const counts = {};
+    tasks.forEach(t => { counts[t.cat] = (counts[t.cat]||0)+1; });
+    let catHtml = `<button class="cat-tab ${catFilter==='all'?'active':''}" onclick="setCatFilter('all')">All <span class="cat-count">${total}</span></button>`;
+    Object.entries(CATS).forEach(([k,c]) => {
+      if (!counts[k]) return;
+      catHtml += `<button class="cat-tab ${catFilter===k?'active':''}" onclick="setCatFilter('${k}')">
+        <span class="dot" style="background:${c.dot}"></span>${c.icon} ${c.label} <span class="cat-count">${counts[k]}</span>
+      </button>`;
+    });
+    document.getElementById('cat-bar').innerHTML = catHtml;
 
-    let visible = tasks.filter(t => {
+    const grid = document.getElementById('cards-grid');
+    const visible = tasks.filter(t => {
       if (filter === 'active' && t.done)  return false;
       if (filter === 'done'   && !t.done) return false;
       if (catFilter !== 'all' && t.cat !== catFilter) return false;
@@ -648,10 +609,7 @@
     });
 
     if (!visible.length) {
-      grid.innerHTML = `<div class="empty" style="column-span:all">
-        <div class="icon">🌿</div>
-        <p>No tasks here yet.</p>
-      </div>`;
+      grid.innerHTML = `<div class="empty"><div class="icon">🌿</div><p>No tasks here yet.</p></div>`;
       return;
     }
 
@@ -659,24 +617,38 @@
       const cat = CATS[t.cat] || CATS.other;
       const dl  = fmtDeadline(t.deadline);
       return `
-      <div class="card ${t.done?'completed':''}" data-cat="${t.cat}">
+      <div class="card ${t.done?'completed':''}" data-cat="${t.cat}" id="card-${t.id}">
         <div class="card-top">
           <div class="card-cat-badge">
-            <span class="dot" style="background:${cat.dot}"></span>
-            ${cat.icon} ${cat.label}
+            <span class="dot" style="background:${cat.dot}"></span>${cat.icon} ${cat.label}
           </div>
           <div class="card-actions">
-            <button class="card-btn check" onclick="toggleTask(${t.id})" title="${t.done?'Undo':'Complete'}">
-              ${t.done ? '↩' : '✓'}
-            </button>
-            <button class="card-btn del" onclick="deleteTask(${t.id})" title="Delete">✕</button>
+            <button class="card-btn check" onclick="toggleTask(${t.id})" title="${t.done?'Undo':'Complete'}">${t.done?'↩':'✓'}</button>
+            <button class="card-btn edit"  onclick="startEdit(${t.id})"  title="Edit">✎</button>
+            <button class="card-btn del"   onclick="deleteTask(${t.id})" title="Delete">✕</button>
           </div>
         </div>
-        <div class="card-text">${escHtml(t.text)}</div>
+
+        <!-- View mode -->
+        <div class="view-mode">
+          <div class="card-title">${escHtml(t.title)}</div>
+          ${t.notes ? `<div class="card-notes">${escHtml(t.notes)}</div>` : ''}
+        </div>
+
+        <!-- Edit mode -->
+        <div class="edit-mode">
+          <input  class="edit-field edit-title" type="text" value="${escAttr(t.title)}" placeholder="Title..." maxlength="120" />
+          <textarea class="edit-field edit-notes" rows="3" placeholder="Notes..." maxlength="600">${escHtml(t.notes||'')}</textarea>
+          <div class="edit-actions">
+            <button class="save-btn"   onclick="saveEdit(${t.id})">Save</button>
+            <button class="cancel-btn" onclick="cancelEdit(${t.id})">Cancel</button>
+          </div>
+        </div>
+
         <div class="card-footer">
           <span class="priority-badge ${t.priority}">${t.priority}</span>
           ${dl ? `<span class="deadline-badge ${dl.overdue?'overdue':''}">
-            ${dl.overdue ? '⚠️' : '📅'} ${dl.today ? 'Today!' : dl.label}
+            ${dl.overdue?'⚠️':'📅'} ${dl.today?'Today!':dl.label}
           </span>` : ''}
           <span class="card-time">${t.time}</span>
         </div>
@@ -684,8 +656,11 @@
     }).join('');
   }
 
-  function escHtml(s) {
+  function escHtml(s='') {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escAttr(s='') {
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   }
 
   document.getElementById('task-input').addEventListener('keydown', e => {
