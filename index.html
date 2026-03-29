@@ -3,503 +3,475 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TaskOS — Todo List</title>
-
+  <title>TaskOS</title>
   <style>
     :root {
-      --bg: #0a0e1a;
-      --surface: #0f1629;
-      --surface2: #151c35;
-      --border: #1e2d4a;
-      --accent: #00d4ff;
-      --accent2: #7b61ff;
-      --green: #00ff9d;
-      --red: #ff4757;
-      --text: #e2e8f0;
-      --text-muted: #4a6080;
-      --glow: 0 0 20px rgba(0, 212, 255, 0.15);
+      --bg-from: #e8d5f5;
+      --bg-to:   #c8e6ff;
+      --glass:   rgba(255,255,255,0.45);
+      --glass-border: rgba(255,255,255,0.7);
+      --glass-shadow: 0 8px 32px rgba(120,80,180,0.10);
+      --text:    #3a3153;
+      --muted:   #9b8faa;
+      --radius:  18px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      font-family: 'Courier New', monospace;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
       min-height: 100vh;
-      overflow-x: hidden;
+      background: linear-gradient(135deg, #f0e6ff 0%, #dceeff 50%, #fce4f0 100%);
+      color: var(--text);
     }
 
-    /* Grid background */
-    body::before {
-      content: '';
+    /* ── Blobs ── */
+    .blob {
       position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
       pointer-events: none;
       z-index: 0;
     }
+    .blob-1 { width:500px; height:500px; background:#c9b0ff; top:-120px; left:-100px; }
+    .blob-2 { width:400px; height:400px; background:#a8d8ff; bottom:-80px; right:-80px; }
+    .blob-3 { width:300px; height:300px; background:#ffb8d9; top:40%; left:60%; }
 
-    .container {
+    .app {
       position: relative;
       z-index: 1;
-      max-width: 720px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 40px 24px 60px;
     }
 
-    /* Header */
-    .header {
+    /* ── Glass mixin ── */
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* ── Header ── */
+    header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
-
-    .header .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .header .logo .icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .header h1 {
-      font-size: 28px;
+    header h1 {
+      font-size: 34px;
       font-weight: 700;
-      letter-spacing: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6, #ec4899);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      margin-bottom: 4px;
+    }
+    header p {
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
     }
 
-    .header .subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    /* Stats bar */
+    /* ── Stats ── */
     .stats {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 28px;
     }
-
-    .stat-card {
+    .stat {
       flex: 1;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 18px;
+      border-radius: 16px;
+      padding: 16px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
     }
-
-    .stat-card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-    }
-
-    .stat-card.total::after { background: var(--accent); }
-    .stat-card.done::after  { background: var(--green); }
-    .stat-card.left::after  { background: var(--accent2); }
-
-    .stat-card .num {
-      font-size: 26px;
+    .stat .n {
+      font-size: 28px;
       font-weight: 700;
       line-height: 1;
       margin-bottom: 4px;
     }
+    .stat .l { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+    .stat.total .n { color: #8b5cf6; }
+    .stat.done  .n { color: #34d399; }
+    .stat.left  .n { color: #60a5fa; }
 
-    .stat-card.total .num { color: var(--accent); }
-    .stat-card.done .num  { color: var(--green); }
-    .stat-card.left .num  { color: var(--accent2); }
-
-    .stat-card .label {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    /* Input area */
-    .input-area {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: var(--glow);
-    }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .task-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .task-input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .task-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
-    }
-
-    .add-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      border-radius: 8px;
-      padding: 12px 20px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      white-space: nowrap;
-    }
-
-    .add-btn:hover  { opacity: 0.9; }
-    .add-btn:active { transform: scale(0.97); }
-
-    .priority-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .priority-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-left: 4px;
-    }
-
-    .priority-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 5px 12px;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .priority-btn:hover,
-    .priority-btn.active {
-      border-color: currentColor;
-    }
-
-    .priority-btn.low    { --c: #00ff9d; }
-    .priority-btn.medium { --c: #ffd700; }
-    .priority-btn.high   { --c: #ff4757; }
-
-    .priority-btn.low.active    { color: #00ff9d; background: rgba(0,255,157,0.08); border-color: #00ff9d; }
-    .priority-btn.medium.active { color: #ffd700; background: rgba(255,215,0,0.08); border-color: #ffd700; }
-    .priority-btn.high.active   { color: #ff4757; background: rgba(255,71,87,0.08);  border-color: #ff4757; }
-
-    /* Filter bar */
-    .filter-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 14px;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-btn.active {
-      background: rgba(0,212,255,0.08);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .spacer { flex: 1; }
-
-    .clear-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 14px;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .clear-btn:hover {
-      border-color: var(--red);
-      color: var(--red);
-    }
-
-    /* Task list */
-    .task-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .task-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-      animation: slideIn 0.2s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .task-item:hover {
-      border-color: rgba(0,212,255,0.3);
-      box-shadow: var(--glow);
-    }
-
-    .task-item.done {
-      opacity: 0.5;
-    }
-
-    .task-item .priority-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .task-item .priority-dot.low    { background: #00ff9d; box-shadow: 0 0 6px #00ff9d88; }
-    .task-item .priority-dot.medium { background: #ffd700; box-shadow: 0 0 6px #ffd70088; }
-    .task-item .priority-dot.high   { background: #ff4757; box-shadow: 0 0 6px #ff475788; }
-
-    .checkbox {
-      width: 20px;
-      height: 20px;
-      border: 1.5px solid var(--border);
-      border-radius: 5px;
-      flex-shrink: 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      background: var(--bg);
-    }
-
-    .checkbox:hover {
-      border-color: var(--green);
-    }
-
-    .task-item.done .checkbox {
-      background: var(--green);
-      border-color: var(--green);
-    }
-
-    .checkbox svg {
-      display: none;
-      width: 12px;
-      height: 12px;
-    }
-
-    .task-item.done .checkbox svg {
-      display: block;
-    }
-
-    .task-text {
-      flex: 1;
-      font-size: 14px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .task-item.done .task-text {
-      text-decoration: line-through;
-      color: var(--text-muted);
-    }
-
-    .task-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
-    .task-time {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-
-    .delete-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: all 0.2s;
-      line-height: 1;
-    }
-
-    .delete-btn:hover {
-      color: var(--red);
-      background: rgba(255,71,87,0.1);
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-    }
-
-    .empty-state .icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.3;
-    }
-
-    .empty-state p {
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
-
-    /* Progress bar */
+    /* ── Progress ── */
     .progress-wrap {
-      margin-bottom: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 28px;
     }
-
     .progress-header {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
       margin-bottom: 8px;
     }
-
     .progress-bar {
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
+      height: 6px;
+      background: rgba(139,92,246,0.12);
+      border-radius: 3px;
       overflow: hidden;
     }
-
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--green));
-      border-radius: 2px;
+      background: linear-gradient(90deg, #8b5cf6, #60a5fa, #34d399);
+      border-radius: 3px;
       transition: width 0.4s ease;
     }
 
-    /* Scrollbar */
+    /* ── Category tabs ── */
+    .cat-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+    .cat-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 30px;
+      border: 1.5px solid transparent;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(10px);
+      color: var(--muted);
+    }
+    .cat-tab:hover { background: rgba(255,255,255,0.65); color: var(--text); }
+    .cat-tab.active {
+      background: rgba(255,255,255,0.75);
+      border-color: rgba(139,92,246,0.4);
+      color: #8b5cf6;
+      box-shadow: 0 2px 12px rgba(139,92,246,0.15);
+    }
+    .cat-tab .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .cat-count {
+      background: rgba(139,92,246,0.12);
+      color: #8b5cf6;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── Add form ── */
+    .add-form {
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .form-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .task-input {
+      flex: 1;
+      background: rgba(255,255,255,0.5);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .task-input::placeholder { color: var(--muted); }
+    .task-input:focus {
+      background: rgba(255,255,255,0.75);
+      border-color: rgba(139,92,246,0.5);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.08);
+    }
+    .add-btn {
+      background: linear-gradient(135deg, #8b5cf6, #60a5fa);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 22px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(139,92,246,0.3);
+    }
+    .add-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .add-btn:active { transform: translateY(0); }
+
+    .form-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .meta-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Category select */
+    .cat-select {
+      background: rgba(255,255,255,0.5);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cat-select:focus { border-color: rgba(139,92,246,0.4); }
+
+    /* Priority pills */
+    .priority-group { display: flex; gap: 6px; }
+    .p-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.4);
+      color: var(--muted);
+    }
+    .p-btn.low.active    { background: rgba(52,211,153,0.15); border-color: #34d399; color: #059669; }
+    .p-btn.medium.active { background: rgba(251,191,36,0.15); border-color: #fbbf24; color: #d97706; }
+    .p-btn.high.active   { background: rgba(248,113,113,0.15); border-color: #f87171; color: #dc2626; }
+
+    /* Deadline input */
+    .deadline-input {
+      background: rgba(255,255,255,0.5);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .deadline-input:focus { border-color: rgba(139,92,246,0.4); }
+    .deadline-input::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+
+    /* ── Cards grid ── */
+    .cards-grid {
+      columns: 3;
+      column-gap: 16px;
+    }
+    @media (max-width: 720px) { .cards-grid { columns: 2; } }
+    @media (max-width: 480px) { .cards-grid { columns: 1; } }
+
+    .card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      border-radius: 20px;
+      padding: 18px;
+      position: relative;
+      transition: all 0.25s;
+      animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: default;
+    }
+    @keyframes popIn {
+      from { opacity:0; transform: scale(0.85) translateY(10px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(120,80,180,0.18) !important;
+    }
+    .card.completed { opacity: 0.55; }
+
+    /* Card accent colors per category */
+    .card[data-cat="work"]     { background: rgba(235,225,255,0.75); border: 1px solid rgba(180,150,255,0.5); box-shadow: 0 4px 20px rgba(139,92,246,0.1); }
+    .card[data-cat="personal"] { background: rgba(255,225,240,0.75); border: 1px solid rgba(255,160,200,0.5); box-shadow: 0 4px 20px rgba(236,72,153,0.1); }
+    .card[data-cat="shopping"] { background: rgba(220,245,255,0.75); border: 1px solid rgba(140,210,255,0.5); box-shadow: 0 4px 20px rgba(59,130,246,0.1); }
+    .card[data-cat="health"]   { background: rgba(215,255,235,0.75); border: 1px solid rgba(100,220,170,0.5); box-shadow: 0 4px 20px rgba(16,185,129,0.1); }
+    .card[data-cat="other"]    { background: rgba(255,245,215,0.75); border: 1px solid rgba(255,200,100,0.5); box-shadow: 0 4px 20px rgba(245,158,11,0.1); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .card-cat-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.7;
+    }
+    .card-cat-badge .dot { width:7px; height:7px; border-radius:50%; }
+
+    .card-actions { display: flex; gap: 6px; }
+    .card-btn {
+      width: 28px; height: 28px;
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.5);
+    }
+    .card-btn:hover { background: rgba(255,255,255,0.85); transform: scale(1.1); }
+    .card-btn.check { color: #059669; }
+    .card-btn.del   { color: #dc2626; }
+
+    .card-text {
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 500;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+    .card.completed .card-text {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .priority-badge.low    { background: rgba(52,211,153,0.2);  color: #059669; }
+    .priority-badge.medium { background: rgba(251,191,36,0.2);  color: #d97706; }
+    .priority-badge.high   { background: rgba(248,113,113,0.2); color: #dc2626; }
+
+    .deadline-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .deadline-badge.overdue { color: #dc2626; }
+
+    .card-time {
+      font-size: 10px;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty .icon { font-size: 52px; margin-bottom: 12px; opacity: 0.4; }
+    .empty p { font-size: 14px; }
+
+    /* ── Filter bar (done/active) ── */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      background: rgba(255,255,255,0.4);
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: rgba(255,255,255,0.7);
+      border-color: rgba(139,92,246,0.35);
+      color: #8b5cf6;
+    }
+    .spacer { flex: 1; }
+    .clear-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid rgba(248,113,113,0.3);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: #f87171;
+      transition: all 0.2s;
+    }
+    .clear-btn:hover { background: rgba(248,113,113,0.1); }
+
+    /* scrollbar */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.25); border-radius: 3px; }
   </style>
 </head>
 <body>
-<div class="container">
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="app">
 
   <!-- Header -->
-  <div class="header">
-    <div class="logo">
-      <div class="icon">⬡</div>
-      <h1>TASK·OS</h1>
-    </div>
-    <div class="subtitle">// task management system</div>
-  </div>
+  <header>
+    <h1>TaskOS</h1>
+    <p>your personal task board</p>
+  </header>
 
   <!-- Stats -->
   <div class="stats">
-    <div class="stat-card total">
-      <div class="num" id="stat-total">0</div>
-      <div class="label">Total</div>
+    <div class="stat glass total">
+      <div class="n" id="stat-total">0</div>
+      <div class="l">Total</div>
     </div>
-    <div class="stat-card done">
-      <div class="num" id="stat-done">0</div>
-      <div class="label">Completed</div>
+    <div class="stat glass done">
+      <div class="n" id="stat-done">0</div>
+      <div class="l">Done</div>
     </div>
-    <div class="stat-card left">
-      <div class="num" id="stat-left">0</div>
-      <div class="label">Remaining</div>
+    <div class="stat glass left">
+      <div class="n" id="stat-left">0</div>
+      <div class="l">Left</div>
     </div>
   </div>
 
   <!-- Progress -->
-  <div class="progress-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-wrap glass" id="progress-wrap" style="display:none">
     <div class="progress-header">
       <span>Progress</span>
       <span id="progress-pct">0%</span>
@@ -509,28 +481,39 @@
     </div>
   </div>
 
-  <!-- Input -->
-  <div class="input-area">
-    <div class="input-row">
-      <input
-        class="task-input"
-        id="task-input"
-        type="text"
-        placeholder="// add a new task..."
-        autocomplete="off"
-      />
+  <!-- Category tabs -->
+  <div class="cat-bar" id="cat-bar"></div>
+
+  <!-- Add form -->
+  <div class="add-form glass">
+    <div class="form-row">
+      <input class="task-input" id="task-input" type="text" placeholder="Add a new task..." autocomplete="off" />
       <button class="add-btn" onclick="addTask()">+ Add</button>
     </div>
-    <div class="priority-row">
-      <span class="priority-label">Priority:</span>
-      <button class="priority-btn low active" data-p="low" onclick="setPriority('low')">Low</button>
-      <button class="priority-btn medium" data-p="medium" onclick="setPriority('medium')">Medium</button>
-      <button class="priority-btn high" data-p="high" onclick="setPriority('high')">High</button>
+    <div class="form-meta">
+      <span class="meta-label">Category</span>
+      <select class="cat-select" id="cat-select">
+        <option value="work">💼 Work</option>
+        <option value="personal">🌸 Personal</option>
+        <option value="shopping">🛍️ Shopping</option>
+        <option value="health">💚 Health</option>
+        <option value="other">✨ Other</option>
+      </select>
+
+      <span class="meta-label" style="margin-left:6px">Priority</span>
+      <div class="priority-group">
+        <button class="p-btn low active" data-p="low" onclick="setPriority('low')">Low</button>
+        <button class="p-btn medium" data-p="medium" onclick="setPriority('medium')">Medium</button>
+        <button class="p-btn high" data-p="high" onclick="setPriority('high')">High</button>
+      </div>
+
+      <span class="meta-label" style="margin-left:6px">Deadline</span>
+      <input class="deadline-input" id="deadline-input" type="date" />
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filter-bar">
+  <!-- Filter row -->
+  <div class="filter-row">
     <button class="filter-btn active" data-f="all" onclick="setFilter('all')">All</button>
     <button class="filter-btn" data-f="active" onclick="setFilter('active')">Active</button>
     <button class="filter-btn" data-f="done" onclick="setFilter('done')">Completed</button>
@@ -538,45 +521,58 @@
     <button class="clear-btn" onclick="clearDone()">Clear Completed</button>
   </div>
 
-  <!-- Task list -->
-  <div class="task-list" id="task-list"></div>
+  <!-- Cards -->
+  <div class="cards-grid" id="cards-grid"></div>
 
 </div>
 
 <script>
-  let tasks = JSON.parse(localStorage.getItem('taskos') || '[]');
-  let filter = 'all';
+  const CATS = {
+    work:     { label:'Work',     icon:'💼', color:'#8b5cf6', dot:'#a78bfa' },
+    personal: { label:'Personal', icon:'🌸', color:'#ec4899', dot:'#f472b6' },
+    shopping: { label:'Shopping', icon:'🛍️', color:'#3b82f6', dot:'#60a5fa' },
+    health:   { label:'Health',   icon:'💚', color:'#10b981', dot:'#34d399' },
+    other:    { label:'Other',    icon:'✨', color:'#f59e0b', dot:'#fbbf24' },
+  };
+
+  let tasks    = JSON.parse(localStorage.getItem('taskos-v2') || '[]');
+  let filter   = 'all';
+  let catFilter = 'all';
   let priority = 'low';
 
   function setPriority(p) {
     priority = p;
-    document.querySelectorAll('.priority-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.p === p);
-    });
+    document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.dataset.p === p));
   }
 
   function setFilter(f) {
     filter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.f === f);
-    });
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+    render();
+  }
+
+  function setCatFilter(c) {
+    catFilter = c;
+    renderCatBar();
     render();
   }
 
   function addTask() {
-    const input = document.getElementById('task-input');
-    const text = input.value.trim();
+    const input    = document.getElementById('task-input');
+    const cat      = document.getElementById('cat-select').value;
+    const deadline = document.getElementById('deadline-input').value;
+    const text     = input.value.trim();
     if (!text) return;
     tasks.unshift({
       id: Date.now(),
-      text,
-      priority,
+      text, priority, cat,
+      deadline: deadline || null,
       done: false,
-      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
     });
     input.value = '';
-    save();
-    render();
+    document.getElementById('deadline-input').value = '';
+    save(); render();
   }
 
   function toggleTask(id) {
@@ -586,26 +582,54 @@
 
   function deleteTask(id) {
     tasks = tasks.filter(t => t.id !== id);
-    save();
-    render();
+    save(); render();
   }
 
   function clearDone() {
     tasks = tasks.filter(t => !t.done);
-    save();
-    render();
+    save(); render();
   }
 
   function save() {
-    localStorage.setItem('taskos', JSON.stringify(tasks));
+    localStorage.setItem('taskos-v2', JSON.stringify(tasks));
+  }
+
+  function fmtDeadline(d) {
+    if (!d) return null;
+    const dt    = new Date(d + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff  = Math.round((dt - today) / 86400000);
+    const label = dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    return { label, overdue: diff < 0, today: diff === 0 };
+  }
+
+  function renderCatBar() {
+    const bar = document.getElementById('cat-bar');
+    const counts = {};
+    tasks.forEach(t => { counts[t.cat] = (counts[t.cat]||0) + 1; });
+
+    let html = `<button class="cat-tab ${catFilter==='all'?'active':''}" onclick="setCatFilter('all')">
+      All <span class="cat-count">${tasks.length}</span>
+    </button>`;
+
+    Object.entries(CATS).forEach(([key, c]) => {
+      const n = counts[key] || 0;
+      if (!n) return;
+      html += `<button class="cat-tab ${catFilter===key?'active':''}" onclick="setCatFilter('${key}')">
+        <span class="dot" style="background:${c.dot}"></span>
+        ${c.icon} ${c.label} <span class="cat-count">${n}</span>
+      </button>`;
+    });
+
+    bar.innerHTML = html;
   }
 
   function render() {
-    const list = document.getElementById('task-list');
+    const grid = document.getElementById('cards-grid');
     const total = tasks.length;
     const done  = tasks.filter(t => t.done).length;
     const left  = total - done;
-    const pct   = total ? Math.round((done / total) * 100) : 0;
+    const pct   = total ? Math.round((done/total)*100) : 0;
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-done').textContent  = done;
@@ -614,36 +638,50 @@
     document.getElementById('progress-pct').textContent  = pct + '%';
     document.getElementById('progress-wrap').style.display = total ? '' : 'none';
 
-    const filtered = tasks.filter(t => {
-      if (filter === 'active') return !t.done;
-      if (filter === 'done')   return t.done;
+    renderCatBar();
+
+    let visible = tasks.filter(t => {
+      if (filter === 'active' && t.done)  return false;
+      if (filter === 'done'   && !t.done) return false;
+      if (catFilter !== 'all' && t.cat !== catFilter) return false;
       return true;
     });
 
-    if (!filtered.length) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <div class="icon">◈</div>
-          <p>// no tasks to display</p>
-        </div>`;
+    if (!visible.length) {
+      grid.innerHTML = `<div class="empty" style="column-span:all">
+        <div class="icon">🌿</div>
+        <p>No tasks here yet.</p>
+      </div>`;
       return;
     }
 
-    list.innerHTML = filtered.map(t => `
-      <div class="task-item ${t.done ? 'done' : ''}" id="task-${t.id}">
-        <div class="priority-dot ${t.priority}"></div>
-        <div class="checkbox" onclick="toggleTask(${t.id})">
-          <svg viewBox="0 0 12 12" fill="none" stroke="#0a0e1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="2,6 5,9 10,3"/>
-          </svg>
+    grid.innerHTML = visible.map(t => {
+      const cat = CATS[t.cat] || CATS.other;
+      const dl  = fmtDeadline(t.deadline);
+      return `
+      <div class="card ${t.done?'completed':''}" data-cat="${t.cat}">
+        <div class="card-top">
+          <div class="card-cat-badge">
+            <span class="dot" style="background:${cat.dot}"></span>
+            ${cat.icon} ${cat.label}
+          </div>
+          <div class="card-actions">
+            <button class="card-btn check" onclick="toggleTask(${t.id})" title="${t.done?'Undo':'Complete'}">
+              ${t.done ? '↩' : '✓'}
+            </button>
+            <button class="card-btn del" onclick="deleteTask(${t.id})" title="Delete">✕</button>
+          </div>
         </div>
-        <div class="task-text">${escHtml(t.text)}</div>
-        <div class="task-meta">
-          <span class="task-time">${t.time}</span>
-          <button class="delete-btn" onclick="deleteTask(${t.id})">×</button>
+        <div class="card-text">${escHtml(t.text)}</div>
+        <div class="card-footer">
+          <span class="priority-badge ${t.priority}">${t.priority}</span>
+          ${dl ? `<span class="deadline-badge ${dl.overdue?'overdue':''}">
+            ${dl.overdue ? '⚠️' : '📅'} ${dl.today ? 'Today!' : dl.label}
+          </span>` : ''}
+          <span class="card-time">${t.time}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   function escHtml(s) {
